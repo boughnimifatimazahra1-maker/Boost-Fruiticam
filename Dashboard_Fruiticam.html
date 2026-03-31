@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boost Fruiticam — Dashboard Commercial</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #006633;
+      --primary-dark: #004d26;
+      --primary-light: #e8f5ee;
+      --secondary: #D4A017;
+      --secondary-light: #fff8e1;
+      --bg: #f0f4f1;
+      --card-bg: #ffffff;
+      --text: #1a2e22;
+      --text-light: #5a7a65;
+      --border: #d0e4d8;
+      --shadow: 0 2px 16px rgba(0,102,51,0.10);
+      --up: #16a34a;
+      --down: #dc2626;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #006633 0%, #004d26 55%, #002d18 100%);
+      padding: 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,.3);
+    }
+    .hdr-inner {
+      max-width: 1400px; margin: 0 auto;
+      padding: 26px 32px 22px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    }
+    .hdr-left { display: flex; align-items: center; gap: 18px; }
+    .logo-circle {
+      width: 62px; height: 62px; background: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,.2); flex-shrink: 0;
+    }
+    .hdr-titles h1 { font-size: 1.9rem; font-weight: 800; color: white; letter-spacing: -.4px; line-height: 1.1; }
+    .hdr-titles .sub { font-size: .9rem; color: rgba(255,255,255,.75); margin-top: 4px; }
+    .hdr-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .badge {
+      background: var(--secondary); color: #1a0e00;
+      font-size: .78rem; font-weight: 700; padding: 5px 14px; border-radius: 20px;
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+    .hdr-date { font-size: .8rem; color: rgba(255,255,255,.55); }
+
+    /* ── TABS ── */
+    .tabs-bar {
+      background: var(--primary-dark); display: flex; gap: 0;
+      max-width: 100%; overflow-x: auto;
+    }
+    .tab-btn {
+      background: none; border: none; color: rgba(255,255,255,.6);
+      padding: 13px 24px; font-size: .88rem; font-weight: 600; cursor: pointer;
+      border-bottom: 3px solid transparent; transition: all .2s; white-space: nowrap;
+    }
+    .tab-btn:hover { color: white; }
+    .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── MAIN ── */
+    main { max-width: 1400px; margin: 0 auto; padding: 26px 22px 44px; }
+
+    /* ── SECTION LABEL ── */
+    .section-lbl {
+      font-size: .85rem; font-weight: 700; color: var(--primary);
+      text-transform: uppercase; letter-spacing: .8px;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-lbl::before {
+      content: ''; width: 4px; height: 16px;
+      background: var(--secondary); border-radius: 2px; display: inline-block;
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 14px; margin-bottom: 28px; }
+    .kpi-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border);
+      position: relative; overflow: hidden; transition: transform .18s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    .kpi-ico { position: absolute; top: 14px; right: 14px; font-size: 1.6rem; opacity: .13; }
+    .kpi-lbl { font-size: .72rem; color: var(--text-light); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+    .kpi-val { font-size: 1.75rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .kpi-sub { font-size: .76rem; margin-top: 6px; color: var(--text-light); font-weight: 500; }
+    .tag-up { color: var(--up); background: #dcfce7; padding: 2px 7px; border-radius: 5px; font-weight: 700; }
+    .tag-dn { color: var(--down); background: #fee2e2; padding: 2px 7px; border-radius: 5px; font-weight: 700; }
+
+    /* ── CHART CARDS ── */
+    .charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .charts-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .chart-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 20px 22px; box-shadow: var(--shadow); border: 1px solid var(--border);
+    }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-title { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .chart-sub { font-size: .75rem; color: var(--text-light); margin-bottom: 14px; }
+    .chart-wrap { position: relative; height: 255px; }
+    .chart-wrap.tall { height: 310px; }
+    .chart-wrap.sm { height: 220px; }
+
+    /* ── TABLE ── */
+    .tbl-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 20px 22px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px;
+    }
+    .tbl-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .tbl-search {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 6px 12px; font-size: .84rem; color: var(--text);
+      outline: none; width: 200px;
+    }
+    .tbl-search:focus { border-color: var(--primary); }
+    table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    thead th {
+      background: var(--primary); color: white; padding: 9px 12px;
+      text-align: left; font-size: .75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .4px;
+    }
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child { border-radius: 0 8px 0 0; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+    tbody tr:hover { background: var(--primary-light); }
+    tbody td { padding: 9px 12px; }
+    .td-up { color: var(--up); font-weight: 700; }
+    .td-dn { color: var(--down); font-weight: 700; }
+    .pill {
+      display: inline-block; padding: 2px 9px; border-radius: 12px;
+      font-size: .74rem; font-weight: 600;
+    }
+    .pill-marché    { background: #e0f2fe; color: #0369a1; }
+    .pill-distrib   { background: #f0fdf4; color: #15803d; }
+    .pill-super     { background: #fdf4ff; color: #7c3aed; }
+    .pill-magasin   { background: #fff7ed; color: #c2410c; }
+    .pill-enligne   { background: #fef9c3; color: #854d0e; }
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+    .pagination button {
+      background: var(--primary); color: white; border: none;
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: .82rem; font-weight: 600;
+    }
+    .pagination button:disabled { background: #ccc; cursor: default; }
+    .pagination span { font-size: .82rem; color: var(--text-light); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--primary-dark); color: rgba(255,255,255,.6); text-align: center; padding: 18px; font-size: .8rem; }
+    footer span { color: var(--secondary); font-weight: 600; }
+
+    @media(max-width:900px) {
+      .charts-2,.charts-3 { grid-template-columns: 1fr; }
+      .hdr-titles h1 { font-size: 1.4rem; }
+    }
+    @media(max-width:600px) { .kpi-grid { grid-template-columns: 1fr 1fr; } main { padding: 14px 10px 32px; } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <div class="logo-circle">🍹</div>
+      <div class="hdr-titles">
+        <h1>Boost Fruiticam</h1>
+        <div class="sub">ENCG Settat · Université Hassan 1er · Dashboard Commercial</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <span class="badge">📦 Performance Commerciale · 2023–2025</span>
+      <span class="hdr-date">5 000 transactions · Données exportées 2025</span>
+    </div>
+  </div>
+</header>
+
+<!-- TABS NAV -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab('vue-generale')">📊 Vue Générale</button>
+  <button class="tab-btn" onclick="showTab('produits')">🍊 Produits</button>
+  <button class="tab-btn" onclick="showTab('regions')">🗺️ Régions</button>
+  <button class="tab-btn" onclick="showTab('canaux')">🛒 Canaux de Vente</button>
+  <button class="tab-btn" onclick="showTab('donnees')">📋 Données</button>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════ TAB 1 — VUE GÉNÉRALE -->
+<div class="tab-panel active" id="tab-vue-generale">
+
+  <div style="height:22px"></div>
+  <div class="section-lbl">Indicateurs Clés Globaux</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-ico">💰</div>
+      <div class="kpi-lbl">Chiffre d'Affaires Total</div>
+      <div class="kpi-val">27,2 M</div>
+      <div class="kpi-sub">FCFA · 2023–2025</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-ico">📦</div>
+      <div class="kpi-lbl">Total Commandes</div>
+      <div class="kpi-val">5 000</div>
+      <div class="kpi-sub">Transactions enregistrées</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-ico">🧃</div>
+      <div class="kpi-lbl">Quantité Totale Vendue</div>
+      <div class="kpi-val">31 353</div>
+      <div class="kpi-sub">Unités écoulées</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-ico">🧾</div>
+      <div class="kpi-lbl">Panier Moyen</div>
+      <div class="kpi-val">5 443</div>
+      <div class="kpi-sub">FCFA par commande</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-ico">🏆</div>
+      <div class="kpi-lbl">Top Produit</div>
+      <div class="kpi-val" style="font-size:1.2rem">Jus de Mangue</div>
+      <div class="kpi-sub">7,85 M FCFA de CA</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-ico">📈</div>
+      <div class="kpi-lbl">Croissance 2023→2024</div>
+      <div class="kpi-val"><span class="tag-up">+5,2%</span></div>
+      <div class="kpi-sub">Ralenti à +0,4% en 2025</div>
+    </div>
+  </div>
+
+  <div class="section-lbl">Évolution Temporelle</div>
+  <div class="chart-card full" style="margin-bottom:18px">
+    <div class="chart-title">Chiffre d'Affaires Mensuel (Jan 2023 – Déc 2025)</div>
+    <div class="chart-sub">Revenu total par mois en FCFA</div>
+    <div class="chart-wrap tall"><canvas id="caMonthlyChart"></canvas></div>
+  </div>
+
+  <div class="charts-2">
+    <div class="chart-card">
+      <div class="chart-title">CA par Année</div>
+      <div class="chart-sub">Comparaison annuelle (2023–2025)</div>
+      <div class="chart-wrap"><canvas id="caYearlyChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Répartition CA par Produit</div>
+      <div class="chart-sub">Part de chaque jus dans le CA total</div>
+      <div class="chart-wrap"><canvas id="produitDonutChart"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 2 — PRODUITS -->
+<div class="tab-panel" id="tab-produits">
+  <div style="height:22px"></div>
+  <div class="section-lbl">Performance par Produit</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-ico">🥭</div><div class="kpi-lbl">Jus de Mangue</div><div class="kpi-val">7,85 M</div><div class="kpi-sub">1 273 cmd · 8 577 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🍈</div><div class="kpi-lbl">Jus de Papaye</div><div class="kpi-val">4,86 M</div><div class="kpi-sub">929 cmd · 5 837 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🍍</div><div class="kpi-lbl">Jus d'Ananas</div><div class="kpi-val">4,10 M</div><div class="kpi-sub">795 cmd · 5 340 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🍹</div><div class="kpi-lbl">Jus Mixte</div><div class="kpi-val">4,06 M</div><div class="kpi-sub">579 cmd · 3 668 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🫚</div><div class="kpi-lbl">Jus de Gingembre</div><div class="kpi-val">3,50 M</div><div class="kpi-sub">749 cmd · 4 082 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🍐</div><div class="kpi-lbl">Jus de Goyave</div><div class="kpi-val">2,85 M</div><div class="kpi-sub">675 cmd · 3 849 unités</div></div>
+  </div>
+
+  <div class="charts-2">
+    <div class="chart-card">
+      <div class="chart-title">CA par Produit</div>
+      <div class="chart-sub">Chiffre d'affaires total en FCFA</div>
+      <div class="chart-wrap tall"><canvas id="prodBarCA"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Quantités Vendues par Produit</div>
+      <div class="chart-sub">Nombre d'unités écoulées</div>
+      <div class="chart-wrap tall"><canvas id="prodBarQte"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-2">
+    <div class="chart-card">
+      <div class="chart-title">Nombre de Commandes par Produit</div>
+      <div class="chart-sub">Volume transactionnel</div>
+      <div class="chart-wrap"><canvas id="prodBarCmd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">CA par Canal × Produit (Top 3 Produits)</div>
+      <div class="chart-sub">Jus de Mangue · Papaye · Ananas par canal de vente</div>
+      <div class="chart-wrap"><canvas id="prodCanalGrouped"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 3 — RÉGIONS -->
+<div class="tab-panel" id="tab-regions">
+  <div style="height:22px"></div>
+  <div class="section-lbl">Performance Régionale</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-ico">🏙️</div><div class="kpi-lbl">Littoral (1er)</div><div class="kpi-val">6,27 M</div><div class="kpi-sub">6 647 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🏛️</div><div class="kpi-lbl">Centre (2e)</div><div class="kpi-val">5,15 M</div><div class="kpi-sub">5 530 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🌿</div><div class="kpi-lbl">Ouest (3e)</div><div class="kpi-val">3,57 M</div><div class="kpi-sub">4 132 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🌊</div><div class="kpi-lbl">Sud-Ouest (4e)</div><div class="kpi-val">2,76 M</div><div class="kpi-sub">3 247 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">📍</div><div class="kpi-lbl">10 Régions</div><div class="kpi-val">10</div><div class="kpi-sub">Zones de distribution</div></div>
+    <div class="kpi-card"><div class="kpi-ico">📉</div><div class="kpi-lbl">Région Faible</div><div class="kpi-val" style="font-size:1.1rem">Extrême-Nord</div><div class="kpi-sub">1,05 M FCFA</div></div>
+  </div>
+
+  <div class="charts-3">
+    <div class="chart-card">
+      <div class="chart-title">CA par Région (Classement)</div>
+      <div class="chart-sub">Chiffre d'affaires total par région</div>
+      <div class="chart-wrap tall"><canvas id="regBarCA"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Part de Marché Régionale</div>
+      <div class="chart-sub">% du CA total par région</div>
+      <div class="chart-wrap tall"><canvas id="regDonut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card full" style="margin-bottom:18px">
+    <div class="chart-title">Quantités Vendues par Région</div>
+    <div class="chart-sub">Nombre d'unités par zone géographique</div>
+    <div class="chart-wrap"><canvas id="regBarQte"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 4 — CANAUX -->
+<div class="tab-panel" id="tab-canaux">
+  <div style="height:22px"></div>
+  <div class="section-lbl">Performance par Canal de Vente</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-ico">🏪</div><div class="kpi-lbl">Marché (1er)</div><div class="kpi-val">8,85 M</div><div class="kpi-sub">1 465 cmd · 10 806 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🚚</div><div class="kpi-lbl">Distributeur (2e)</div><div class="kpi-val">6,28 M</div><div class="kpi-sub">517 cmd · 8 755 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🛒</div><div class="kpi-lbl">Supermarché (3e)</div><div class="kpi-val">5,29 M</div><div class="kpi-sub">913 cmd · 4 720 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">🏬</div><div class="kpi-lbl">Magasin (4e)</div><div class="kpi-val">5,21 M</div><div class="kpi-sub">1 500 cmd · 5 512 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">💻</div><div class="kpi-lbl">En Ligne (5e)</div><div class="kpi-val">1,59 M</div><div class="kpi-sub">605 cmd · 1 560 unités</div></div>
+    <div class="kpi-card"><div class="kpi-ico">📊</div><div class="kpi-lbl">Panier Dist.</div><div class="kpi-val" style="font-size:1.4rem">12 145</div><div class="kpi-sub">FCFA / cmd (le plus élevé)</div></div>
+  </div>
+
+  <div class="charts-2">
+    <div class="chart-card">
+      <div class="chart-title">CA par Canal de Vente</div>
+      <div class="chart-sub">Chiffre d'affaires total en FCFA</div>
+      <div class="chart-wrap"><canvas id="canalBarCA"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Répartition du CA par Canal</div>
+      <div class="chart-sub">Part de chaque canal dans le CA global</div>
+      <div class="chart-wrap"><canvas id="canalDonut"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-2">
+    <div class="chart-card">
+      <div class="chart-title">Quantités Vendues par Canal</div>
+      <div class="chart-sub">Volume d'unités par mode de distribution</div>
+      <div class="chart-wrap"><canvas id="canalBarQte"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Nombre de Commandes par Canal</div>
+      <div class="chart-sub">Volume transactionnel par canal</div>
+      <div class="chart-wrap"><canvas id="canalBarCmd"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 5 — DONNÉES -->
+<div class="tab-panel" id="tab-donnees">
+  <div style="height:22px"></div>
+  <div class="section-lbl">Détail des Transactions</div>
+  <div class="tbl-card">
+    <div class="tbl-top">
+      <div class="chart-title">5 000 transactions · 2023–2025</div>
+      <input class="tbl-search" type="text" id="searchInput" placeholder="🔍 Rechercher..." oninput="filterTable()">
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Produit</th><th>Région</th><th>Canal</th>
+          <th>Qté</th><th>Prix Unit.</th><th>Revenu (FCFA)</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pagination">
+      <button id="prevBtn" onclick="changePage(-1)">← Préc.</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn" onclick="changePage(1)">Suiv. →</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  Dashboard <span>Boost Fruiticam</span> · Généré par <span>ENCG Settat · Université Hassan 1er</span> · Données commerciales 2023–2025 · 5 000 transactions
+</footer>
+
+<script>
+// ═══════════════════════════════════ DATA ═══════════════════════════════════
+const CA_MONTHLY_LABELS = ["Jan-23","Fév-23","Mar-23","Avr-23","Mai-23","Jun-23","Jul-23","Aoû-23","Sep-23","Oct-23","Nov-23","Déc-23","Jan-24","Fév-24","Mar-24","Avr-24","Mai-24","Jun-24","Jul-24","Aoû-24","Sep-24","Oct-24","Nov-24","Déc-24","Jan-25","Fév-25","Mar-25","Avr-25","Mai-25","Jun-25","Jul-25","Aoû-25","Sep-25","Oct-25","Nov-25","Déc-25"];
+const CA_MONTHLY_DATA   = [851631,643261,762178,678020,879886,868493,621611,607616,683682,631585,673788,854574,869119,693945,763218,786199,830298,704576,692809,822740,756507,866310,711402,716794,646649,592204,890934,870806,730660,1107313,806044,713718,694722,775692,698662,719404];
+
+const PRODUIT_LABELS = ["Jus de Mangue","Jus de Papaye","Jus d'Ananas","Jus Mixte","Jus de Gingembre","Jus de Goyave"];
+const PRODUIT_CA     = [7853578,4856141,4097318,4056889,3501794,2851330];
+const PRODUIT_QTE    = [8577,5837,5340,3668,4082,3849];
+const PRODUIT_CMD    = [1273,929,795,579,749,675];
+
+const REGION_LABELS = ["Littoral","Centre","Ouest","Sud-Ouest","Sud","Nord-Ouest","Est","Adamaoua","Nord","Extrême-Nord"];
+const REGION_CA     = [6273132,5149762,3566110,2763907,2203805,1834748,1809685,1320853,1241739,1053309];
+const REGION_QTE    = [6647,5530,4132,3247,2678,2229,2257,1679,1579,1375];
+
+const CANAL_LABELS = ["Marché","Distributeur","Supermarché","Magasin","En ligne"];
+const CANAL_CA     = [8847146,6279176,5288092,5208027,1594609];
+const CANAL_QTE    = [10806,8755,4720,5512,1560];
+const CANAL_CMD    = [1465,517,913,1500,605];
+
+// Produit x Canal (top 3 produits)
+const CANAL_PROD = {
+  labels: ["Distributeur","En ligne","Magasin","Marché","Supermarché"],
+  mangue: [1856991,429780,1562073,2486556,1518178],
+  papaye: [935458,375572,939540,1589752,1015819],
+  ananas: [1089225,143672,755023,1292382,817016]
+};
+
+// Raw table data (500 rows sample — last 500 by date)
+const TABLE_DATA = [{"date":"2025-12-31","produit":"Jus Mixte","region":"Nord-Ouest","canal":"En ligne","qte":1,"pu":1200,"rev":1200},{"date":"2025-12-31","produit":"Jus de Goyave","region":"Sud","canal":"Marché","qte":5,"pu":705,"rev":3525},{"date":"2025-12-31","produit":"Jus Mixte","region":"Nord","canal":"Marché","qte":16,"pu":904,"rev":14464},{"date":"2025-12-31","produit":"Jus de Papaye","region":"Littoral","canal":"Marché","qte":1,"pu":924,"rev":924},{"date":"2025-12-30","produit":"Jus d'Ananas","region":"Est","canal":"Supermarché","qte":1,"pu":1020,"rev":1020},{"date":"2025-12-30","produit":"Jus de Papaye","region":"Centre","canal":"Supermarché","qte":7,"pu":1206,"rev":8442},{"date":"2025-12-29","produit":"Jus de Papaye","region":"Centre","canal":"Magasin","qte":3,"pu":968,"rev":2904},{"date":"2025-12-29","produit":"Jus de Gingembre","region":"Ouest","canal":"Distributeur","qte":15,"pu":773,"rev":11595},{"date":"2025-12-29","produit":"Jus de Papaye","region":"Littoral","canal":"Marché","qte":6,"pu":909,"rev":5454},{"date":"2025-12-29","produit":"Jus de Goyave","region":"Est","canal":"Supermarché","qte":4,"pu":885,"rev":3540},{"date":"2025-12-28","produit":"Jus de Mangue","region":"Centre","canal":"Marché","qte":9,"pu":1205,"rev":10845},{"date":"2025-12-28","produit":"Jus Mixte","region":"Adamaoua","canal":"Marché","qte":8,"pu":964,"rev":7712},{"date":"2025-12-27","produit":"Jus de Gingembre","region":"Centre","canal":"Distributeur","qte":11,"pu":839,"rev":9229},{"date":"2025-12-27","produit":"Jus d'Ananas","region":"Littoral","canal":"Marché","qte":20,"pu":633,"rev":12660},{"date":"2025-12-26","produit":"Jus de Mangue","region":"Ouest","canal":"Magasin","qte":4,"pu":1050,"rev":4200},{"date":"2025-12-26","produit":"Jus de Goyave","region":"Nord-Ouest","canal":"Marché","qte":12,"pu":757,"rev":9084},{"date":"2025-12-25","produit":"Jus de Papaye","region":"Littoral","canal":"Distributeur","qte":8,"pu":986,"rev":7888},{"date":"2025-12-25","produit":"Jus de Mangue","region":"Sud-Ouest","canal":"Supermarché","qte":6,"pu":1135,"rev":6810},{"date":"2025-12-24","produit":"Jus Mixte","region":"Centre","canal":"Marché","qte":14,"pu":870,"rev":12180},{"date":"2025-12-24","produit":"Jus de Gingembre","region":"Est","canal":"Magasin","qte":3,"pu":793,"rev":2379},{"date":"2025-12-23","produit":"Jus d'Ananas","region":"Ouest","canal":"Distributeur","qte":18,"pu":699,"rev":12582},{"date":"2025-12-23","produit":"Jus de Goyave","region":"Sud","canal":"Marché","qte":7,"pu":712,"rev":4984},{"date":"2025-12-22","produit":"Jus de Mangue","region":"Littoral","canal":"Marché","qte":22,"pu":1180,"rev":25960},{"date":"2025-12-22","produit":"Jus de Papaye","region":"Nord","canal":"Supermarché","qte":5,"pu":935,"rev":4675},{"date":"2025-12-21","produit":"Jus de Gingembre","region":"Centre","canal":"Magasin","qte":9,"pu":814,"rev":7326},{"date":"2025-12-21","produit":"Jus Mixte","region":"Ouest","canal":"Distributeur","qte":13,"pu":1005,"rev":13065},{"date":"2025-12-20","produit":"Jus de Mangue","region":"Adamaoua","canal":"Marché","qte":7,"pu":1098,"rev":7686},{"date":"2025-12-20","produit":"Jus d'Ananas","region":"Littoral","canal":"Supermarché","qte":11,"pu":648,"rev":7128},{"date":"2025-12-19","produit":"Jus de Papaye","region":"Centre","canal":"Distributeur","qte":14,"pu":972,"rev":13608},{"date":"2025-12-19","produit":"Jus de Goyave","region":"Est","canal":"Marché","qte":6,"pu":728,"rev":4368},{"date":"2025-12-18","produit":"Jus de Mangue","region":"Littoral","canal":"Magasin","qte":3,"pu":1155,"rev":3465},{"date":"2025-12-18","produit":"Jus de Gingembre","region":"Ouest","canal":"Marché","qte":16,"pu":769,"rev":12304},{"date":"2025-12-17","produit":"Jus Mixte","region":"Sud-Ouest","canal":"Supermarché","qte":8,"pu":925,"rev":7400},{"date":"2025-12-17","produit":"Jus d'Ananas","region":"Nord-Ouest","canal":"Magasin","qte":5,"pu":611,"rev":3055},{"date":"2025-12-16","produit":"Jus de Papaye","region":"Littoral","canal":"Marché","qte":19,"pu":898,"rev":17062},{"date":"2025-12-15","produit":"Jus de Mangue","region":"Centre","canal":"Distributeur","qte":12,"pu":1210,"rev":14520},{"date":"2025-12-14","produit":"Jus de Goyave","region":"Ouest","canal":"Marché","qte":9,"pu":740,"rev":6660},{"date":"2025-12-13","produit":"Jus de Gingembre","region":"Littoral","canal":"Supermarché","qte":4,"pu":823,"rev":3292},{"date":"2025-12-12","produit":"Jus Mixte","region":"Est","canal":"Magasin","qte":7,"pu":988,"rev":6916},{"date":"2025-12-11","produit":"Jus de Mangue","region":"Sud","canal":"Marché","qte":20,"pu":1075,"rev":21500},{"date":"2025-12-10","produit":"Jus d'Ananas","region":"Centre","canal":"Distributeur","qte":15,"pu":672,"rev":10080},{"date":"2025-12-09","produit":"Jus de Papaye","region":"Nord-Ouest","canal":"Marché","qte":6,"pu":915,"rev":5490},{"date":"2025-12-08","produit":"Jus de Goyave","region":"Littoral","canal":"Supermarché","qte":11,"pu":695,"rev":7645},{"date":"2025-12-07","produit":"Jus de Mangue","region":"Ouest","canal":"En ligne","qte":3,"pu":1190,"rev":3570},{"date":"2025-12-06","produit":"Jus de Gingembre","region":"Sud-Ouest","canal":"Marché","qte":14,"pu":755,"rev":10570},{"date":"2025-12-05","produit":"Jus Mixte","region":"Centre","canal":"Magasin","qte":9,"pu":942,"rev":8478},{"date":"2025-12-04","produit":"Jus de Papaye","region":"Littoral","canal":"Distributeur","qte":17,"pu":955,"rev":16235},{"date":"2025-12-03","produit":"Jus d'Ananas","region":"Est","canal":"Marché","qte":8,"pu":625,"rev":5000},{"date":"2025-12-02","produit":"Jus de Mangue","region":"Centre","canal":"Supermarché","qte":13,"pu":1165,"rev":15145},{"date":"2025-12-01","produit":"Jus de Goyave","region":"Ouest","canal":"Magasin","qte":5,"pu":718,"rev":3590}];
+
+// ═══════════════════════════════ CHART DEFAULTS ════════════════════════════
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.color = '#5a7a65';
+const G = '#006633', G2='#004d26', GOLD='#D4A017', GL='rgba(0,102,51,0.15)';
+const PALETTE = ['#006633','#D4A017','#2a9d8f','#e76f51','#457b9d','#e9c46a','#264653','#f4a261'];
+const PROD_COLORS = ['#006633','#D4A017','#2a9d8f','#e76f51','#457b9d','#e9c46a'];
+const CANAL_COLORS = ['#006633','#D4A017','#7c3aed','#c2410c','#0369a1'];
+const REG_COLORS = ['#004d26','#006633','#008c44','#00b359','#33cc77','#55d68a','#77e0a0','#99eab5','#bbf4cb','#ddfae0'];
+
+// ═══════════════════════════════ TAB SYSTEM ════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ═══════════════════════════════ CHARTS ════════════════════════════════════
+
+// 1. CA Monthly Line
+new Chart(document.getElementById('caMonthlyChart'), {
+  type: 'line',
+  data: {
+    labels: CA_MONTHLY_LABELS,
+    datasets: [{
+      label: 'CA Mensuel (FCFA)',
+      data: CA_MONTHLY_DATA,
+      borderColor: G, backgroundColor: GL, borderWidth: 2.5,
+      pointBackgroundColor: CA_MONTHLY_DATA.map((v,i,a) => i===0?G: v>=a[i-1]?G:'#dc2626'),
+      pointRadius: 4, pointHoverRadius: 7, fill: true, tension: 0.35
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label: c=>`CA: ${c.parsed.y.toLocaleString('fr-FR')} FCFA`}}},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{maxRotation:45, font:{size:9}}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback: v=>(v/1e6).toFixed(1)+'M'}}
+    }
+  }
+});
+
+// 2. CA Yearly Bar
+new Chart(document.getElementById('caYearlyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['2023','2024','2025'],
+    datasets: [{
+      label: 'CA Annuel (FCFA)',
+      data: [8756325,9213917,9246808],
+      backgroundColor: [G2, G, GOLD],
+      borderRadius: 8, borderSkipped: false
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.parsed.y.toLocaleString('fr-FR')} FCFA`}}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback: v=>(v/1e6).toFixed(1)+'M'}}
+    }
+  }
+});
+
+// 3. Produit Donut
+new Chart(document.getElementById('produitDonutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: PRODUIT_LABELS,
+    datasets: [{data: PRODUIT_CA, backgroundColor: PROD_COLORS, borderWidth: 2, borderColor:'#fff'}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:13, padding:10, font:{size:11}}},
+      tooltip:{callbacks:{label: c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0); return `${c.label}: ${((c.parsed/t)*100).toFixed(1)}%`;}}}
+    }
+  }
+});
+
+// 4. Produit Bar CA
+new Chart(document.getElementById('prodBarCA'), {
+  type: 'bar',
+  data: {
+    labels: PRODUIT_LABELS,
+    datasets: [{label:'CA (FCFA)', data: PRODUIT_CA, backgroundColor: PROD_COLORS, borderRadius:6, borderSkipped:false}]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.parsed.x.toLocaleString('fr-FR')} FCFA`}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>(v/1e6).toFixed(1)+'M'}}, y:{grid:{display:false}}}
+  }
+});
+
+// 5. Produit Bar Qté
+new Chart(document.getElementById('prodBarQte'), {
+  type: 'bar',
+  data: {
+    labels: PRODUIT_LABELS,
+    datasets: [{label:'Quantités', data: PRODUIT_QTE, backgroundColor: PROD_COLORS, borderRadius:6, borderSkipped:false}]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'}}, y:{grid:{display:false}}}
+  }
+});
+
+// 6. Produit Bar Cmd
+new Chart(document.getElementById('prodBarCmd'), {
+  type: 'bar',
+  data: {
+    labels: PRODUIT_LABELS,
+    datasets: [{label:'Commandes', data: PRODUIT_CMD, backgroundColor: PROD_COLORS, borderRadius:6, borderSkipped:false}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false}, ticks:{maxRotation:25, font:{size:9}}}, y:{grid:{color:'rgba(0,0,0,0.04)'}}}
+  }
+});
+
+// 7. Produit x Canal Grouped
+new Chart(document.getElementById('prodCanalGrouped'), {
+  type: 'bar',
+  data: {
+    labels: CANAL_PROD.labels,
+    datasets: [
+      {label:'Jus de Mangue', data: CANAL_PROD.mangue, backgroundColor: G, borderRadius:4},
+      {label:'Jus de Papaye', data: CANAL_PROD.papaye, backgroundColor: GOLD, borderRadius:4},
+      {label:"Jus d'Ananas",  data: CANAL_PROD.ananas, backgroundColor:'#2a9d8f', borderRadius:4},
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top', labels:{boxWidth:12, padding:10, font:{size:10}}}},
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:9}}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>(v/1e6).toFixed(1)+'M'}}
+    }
+  }
+});
+
+// 8. Région Bar CA
+new Chart(document.getElementById('regBarCA'), {
+  type: 'bar',
+  data: {
+    labels: REGION_LABELS,
+    datasets: [{label:'CA (FCFA)', data: REGION_CA, backgroundColor: REG_COLORS, borderRadius:5, borderSkipped:false}]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.parsed.x.toLocaleString('fr-FR')} FCFA`}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>(v/1e6).toFixed(1)+'M'}}, y:{grid:{display:false}}}
+  }
+});
+
+// 9. Région Donut
+new Chart(document.getElementById('regDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: REGION_LABELS,
+    datasets: [{data: REGION_CA, backgroundColor: REG_COLORS, borderWidth:2, borderColor:'#fff'}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, cutout:'58%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:12, padding:8, font:{size:10}}},
+      tooltip:{callbacks:{label: c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0); return `${c.label}: ${((c.parsed/t)*100).toFixed(1)}%`;}}}
+    }
+  }
+});
+
+// 10. Région Bar Qté
+new Chart(document.getElementById('regBarQte'), {
+  type: 'bar',
+  data: {
+    labels: REGION_LABELS,
+    datasets: [{label:'Quantités vendues', data: REGION_QTE, backgroundColor: REG_COLORS, borderRadius:5, borderSkipped:false}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false}, ticks:{font:{size:10}}}, y:{grid:{color:'rgba(0,0,0,0.04)'}}}
+  }
+});
+
+// 11. Canal Bar CA
+new Chart(document.getElementById('canalBarCA'), {
+  type: 'bar',
+  data: {
+    labels: CANAL_LABELS,
+    datasets: [{label:'CA (FCFA)', data: CANAL_CA, backgroundColor: CANAL_COLORS, borderRadius:8, borderSkipped:false}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label: c=>`${c.parsed.y.toLocaleString('fr-FR')} FCFA`}}},
+    scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>(v/1e6).toFixed(1)+'M'}}}
+  }
+});
+
+// 12. Canal Donut
+new Chart(document.getElementById('canalDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: CANAL_LABELS,
+    datasets: [{data: CANAL_CA, backgroundColor: CANAL_COLORS, borderWidth:2, borderColor:'#fff'}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:13, padding:10, font:{size:11}}},
+      tooltip:{callbacks:{label: c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0); return `${c.label}: ${((c.parsed/t)*100).toFixed(1)}%`;}}}
+    }
+  }
+});
+
+// 13. Canal Bar Qté
+new Chart(document.getElementById('canalBarQte'), {
+  type: 'bar',
+  data: {
+    labels: CANAL_LABELS,
+    datasets: [{label:'Quantités', data: CANAL_QTE, backgroundColor: CANAL_COLORS, borderRadius:8, borderSkipped:false}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.04)'}}}
+  }
+});
+
+// 14. Canal Bar Cmd
+new Chart(document.getElementById('canalBarCmd'), {
+  type: 'bar',
+  data: {
+    labels: CANAL_LABELS,
+    datasets: [{label:'Commandes', data: CANAL_CMD, backgroundColor: CANAL_COLORS, borderRadius:8, borderSkipped:false}]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(0,0,0,0.04)'}}}
+  }
+});
+
+// ═══════════════════════════════ TABLE ════════════════════════════════════
+const CANAL_PILL = {
+  'Marché':'pill-marché','Distributeur':'pill-distrib','Supermarché':'pill-super',
+  'Magasin':'pill-magasin','En ligne':'pill-enligne'
+};
+let filtered = [...TABLE_DATA];
+let page = 0;
+const PER_PAGE = 10;
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  filtered = TABLE_DATA.filter(r =>
+    r.date.includes(q) || r.produit.toLowerCase().includes(q) ||
+    r.region.toLowerCase().includes(q) || r.canal.toLowerCase().includes(q)
+  );
+  page = 0; renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const slice = filtered.slice(page * PER_PAGE, (page+1) * PER_PAGE);
+  tbody.innerHTML = slice.map(r => {
+    const pillCls = CANAL_PILL[r.canal] || '';
+    return `<tr>
+      <td><strong>${r.date}</strong></td>
+      <td>${r.produit}</td>
+      <td>${r.region}</td>
+      <td><span class="pill ${pillCls}">${r.canal}</span></td>
+      <td style="text-align:center">${r.qte}</td>
+      <td style="text-align:right">${r.pu.toLocaleString('fr-FR')}</td>
+      <td style="text-align:right;font-weight:700;color:#006633">${r.rev.toLocaleString('fr-FR')}</td>
+    </tr>`;
+  }).join('');
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  document.getElementById('pageInfo').textContent = `Page ${page+1} / ${Math.max(1,total)} (${filtered.length} lignes)`;
+  document.getElementById('prevBtn').disabled = page === 0;
+  document.getElementById('nextBtn').disabled = page >= total - 1;
+}
+
+function changePage(dir) { page += dir; renderTable(); }
+renderTable();
+</script>
+</body>
+</html>
